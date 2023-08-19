@@ -16,9 +16,36 @@ namespace TestProject1
         internal static Stack<int> GetNextGreaterValue(Stack<int> sourceStack)
         {
             Stack<int> result = null;
+            int currentValue;
+            int nextValue;
+
+            
+            for (int i = sourceStack.Count - 1; i >= 0; i--)
+            {
+                currentValue = sourceStack[i];
+
+                // Busca el siguiente número mayor en la pila.
+                for (int j = i + 1; j < sourceStack.Count; j++)
+                {
+                    nextValue = sourceStack[j];
+
+                    if (nextValue > currentValue)
+                    {
+                        result.Push(nextValue);
+                        break;
+                    }
+                }
+
+                // Si no se encuentra un número mayor, ponemos -1.
+                if (result.Count == 0)
+                {
+                    result.Push(-1);
+                }
+            }
 
             return result;
         }
+    
 
         internal static Dictionary<int, EValueType> FillDictionaryFromSource(int[] sourceArr)
         {
