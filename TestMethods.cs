@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TestProject1
 {
@@ -15,69 +17,125 @@ namespace TestProject1
 
         internal static Stack<int> GetNextGreaterValue(Stack<int> sourceStack)
         {
-            Stack<int> result = null;
-            int currentValue;
-            int nextValue;
+            Stack<int> resultStack = new Stack<int>();
+            Stack<int> tempStack = new Stack<int>();
 
-            
-            for (int i = sourceStack.Count - 1; i >= 0; i--)
+            while (sourceStack.Count > 0)
             {
-                currentValue = sourceStack[i];
+                int current = sourceStack.Pop();
 
-                // Busca el siguiente número mayor en la pila.
-                for (int j = i + 1; j < sourceStack.Count; j++)
+                while (tempStack.Count > 0 && tempStack.Peek() <= current)
                 {
-                    nextValue = sourceStack[j];
-
-                    if (nextValue > currentValue)
-                    {
-                        result.Push(nextValue);
-                        break;
-                    }
+                    tempStack.Pop();
                 }
 
-                // Si no se encuentra un número mayor, ponemos -1.
-                if (result.Count == 0)
+                if (tempStack.Count > 0)
                 {
-                    result.Push(-1);
+                    resultStack.Push(tempStack.Peek());
+                }
+                else
+                {
+                    resultStack.Push(-1);
+                }
+
+                tempStack.Push(current);
+            }
+
+            while (resultStack.Count > 0)
+            {
+                sourceStack.Push(resultStack.Pop());
+            }
+
+            return sourceStack;
+        }
+
+
+        internal static Dictionary<int, EValueType> FillDictionaryFromSource(int[] sourceArr)
+        {
+            Dictionary<int, EValueType> result = new Dictionary<int, EValueType>();
+
+            foreach (int num in sourceArr)
+            {
+                if (num % 2 == 0)
+                    result[num] = EValueType.Two;
+                else if (num % 3 == 0)
+                    result[num] = EValueType.Three;
+                else if (num % 5 == 0)
+                    result[num] = EValueType.Five;
+                else if (num % 7 == 0)
+                    result[num] = EValueType.Seven;
+                else
+                    result[num] = EValueType.Prime;
+            }
+
+            return result;
+        }
+
+
+        internal static int CountDictionaryRegistriesWithValueType(Dictionary<int, EValueType> sourceDict, EValueType type)
+        {
+            int count = sourceDict.Count(kv => kv.Value == type);
+            return count;
+        }
+
+        internal static Dictionary<int, EValueType> SortDictionaryRegistries(Dictionary<int, EValueType> sourceDict)
+        {
+            Dictionary<int, EValueType> result = sourceDict.OrderByDescending(kv => kv.Key)
+                                                           .ToDictionary(kv => kv.Key, kv => kv.Value);
+            return result;
+        }
+
+
+        internal static Queue<Ticket>[] ClassifyTickets(List<Ticket> sourceList)
+        {
+            Queue<Ticket>[] result = new Queue<Ticket>[3];
+
+            for (int i = 0; i < 3; i++)
+            {
+                result[i] = new Queue<Ticket>();
+            }
+
+            var groupedTickets = sourceList.OrderBy(ticket => ticket.Turn)
+                                          .GroupBy(ticket => ticket.RequestType);
+
+            foreach (var group in groupedTickets)
+            {
+                switch (group.Key)
+                {
+                    case Ticket.ERequestType.Payment:
+                        foreach (var ticket in group)
+                        {
+                            result[0].Enqueue(ticket);
+                        }
+                        break;
+                    case Ticket.ERequestType.Subscription:
+                        foreach (var ticket in group)
+                        {
+                            result[1].Enqueue(ticket);
+                        }
+                        break;
+                    case Ticket.ERequestType.Cancellation:
+                        foreach (var ticket in group)
+                        {
+                            result[2].Enqueue(ticket);
+                        }
+                        break;
                 }
             }
 
             return result;
         }
-    
 
-        internal static Dictionary<int, EValueType> FillDictionaryFromSource(int[] sourceArr)
-        {
-            Dictionary<int, EValueType> result = null;
-
-            return result;
-        }
-
-        internal static int CountDictionaryRegistriesWithValueType(Dictionary<int, EValueType> sourceDict, EValueType type)
-        {
-            return 0;
-        }
-
-        internal static Dictionary<int, EValueType> SortDictionaryRegistries(Dictionary<int, EValueType> sourceDict)
-        {
-            Dictionary<int, EValueType> result = null;
-
-            return result;
-        }
-
-        internal static Queue<Ticket>[] ClassifyTickets(List<Ticket> sourceList)
-        {
-            Queue<Ticket>[] result = null;
-
-            return result;
-        }
 
         internal static bool AddNewTicket(Queue<Ticket> targetQueue, Ticket ticket)
         {
-            bool result = false;
+            if (ticket.Turn <1 || ticket.Turn >99)
+            {
+                return false;
+            }
 
-            return result;
-        }        
+            targetQueue.Enqueue(ticket);
+            return true;
+        }
     }
 }
