@@ -129,13 +129,52 @@ namespace TestProject1
 
         internal static bool AddNewTicket(Queue<Ticket> targetQueue, Ticket ticket)
         {
-            if (ticket.Turn <1 || ticket.Turn >99)
+            Ticket.ERequestType ticketRequestType = ticket.RequestType;
+            Ticket.ERequestType targetRequestType = GetRequestType(targetQueue);
+
+            if (targetQueue == null)
+            {
+                throw new ArgumentNullException(nameof(targetQueue));
+            }
+
+            if (ticket.Turn < 1 || ticket.Turn > 99)
             {
                 return false;
             }
 
-            targetQueue.Enqueue(ticket);
-            return true;
+            if (ticketRequestType == targetRequestType)
+            {
+                targetQueue.Enqueue(ticket);
+                return true;
+            }
+
+            return false;
+        }
+
+        internal static Ticket.ERequestType GetRequestType(Queue<Ticket> targetQueue)
+        {
+
+            // Define un diccionario que mapea tipos de solicitud a funciones
+            Dictionary<Ticket.ERequestType, Func<Ticket, bool>> requestTypeMappings = new Dictionary<Ticket.ERequestType, Func<Ticket, bool>>
+            {
+                { Ticket.ERequestType.Payment, ticket => ticket.RequestType == Ticket.ERequestType.Payment },
+                { Ticket.ERequestType.Subscription, ticket => ticket.RequestType == Ticket.ERequestType.Subscription },
+                { Ticket.ERequestType.Cancellation, ticket => ticket.RequestType == Ticket.ERequestType.Cancellation }
+            };
+
+            // Itera a través de los tickets en la cola objetivo y busca el tipo de solicitud correspondiente
+            foreach (Ticket ticket in targetQueue)
+            {
+                foreach (var mapping in requestTypeMappings)
+                {
+                    if (mapping.Value(ticket))
+                    {
+                        return mapping.Key;
+                    }
+                }
+            }
+
+            throw new ArgumentException("Unknown request type");
         }
     }
 }
